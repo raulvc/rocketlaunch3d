@@ -43,11 +43,11 @@ public class Rocket{
             texture.setBoundaryColor( new Color4f( 0.0f, 1.0f, 0.0f, 0.0f ) );
             TextureAttributes texAttr = new TextureAttributes();
             //could be REPLACE, BLEND or DECAL instead of MODULATE
-            texAttr.setTextureMode(TextureAttributes.MODULATE);
+            texAttr.setTextureMode(TextureAttributes.BLEND);
             Appearance ap = new Appearance();
             ap.setTexture(texture);
             ap.setTextureAttributes(texAttr);
-            ap.setMaterial(new Material(new Color3f(Color.black), new Color3f(Color.black), new Color3f(Color.red), new Color3f(Color.black), 1.0f));
+            ap.setMaterial(new Material(new Color3f(Color.black), new Color3f(Color.black), new Color3f(Color.lightGray), new Color3f(Color.black), 1.0f));
             rocket = (Shape3D) s.getSceneGroup().getChild(0);
             rocket.setAppearance(ap);
             s.getSceneGroup().removeChild(0);
