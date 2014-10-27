@@ -6,7 +6,17 @@ import javax.vecmath.*;
 
 import com.sun.j3d.utils.universe.*;
 
-public class RocketLaunch {
+public class RocketLaunch extends JFrame implements KeyListener {
+
+    public RocketLaunch(){
+        this.setName("Rocket Launch vAlpha");
+        // kill the window on close
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent winEvent) {
+                System.exit(0);
+            }
+        });
+    }
 
     public static void main(String[] args) {
         RocketLaunch rl = new RocketLaunch();
@@ -14,19 +24,13 @@ public class RocketLaunch {
     }
 
     public void setUp() {
-        JFrame jf = new JFrame("Rocket Launch vAlpha");
-        // kill the window on close
-        jf.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent winEvent) {
-                System.exit(0);
-            }
-        });
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(1, 1, 2, 2));
-
         GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
         Canvas3D canvas3D = new Canvas3D(config);
         canvas3D.setSize(800, 600);
+        // connecting canvas to keyboard input
+        canvas3D.addKeyListener(this);
         SimpleUniverse universe = new SimpleUniverse(canvas3D);
         BranchGroup group = new BranchGroup();
         addObjects(group);
@@ -34,9 +38,9 @@ public class RocketLaunch {
         universe.getViewingPlatform().setNominalViewingTransform();
         universe.addBranchGraph(group);
         panel.add(canvas3D);
-        jf.getContentPane().add(panel, BorderLayout.CENTER);
-        jf.pack();
-        jf.setVisible(true);
+        this.getContentPane().add(panel, BorderLayout.CENTER);
+        this.pack();
+        this.setVisible(true);
     }
 
     public void addLights(BranchGroup group) {
@@ -78,6 +82,27 @@ public class RocketLaunch {
 
         group.addChild(ground_tg);
         group.addChild(rocket_tg);
+    }
+
+    private void launch(){
+        System.out.println("teste");
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode()==KeyEvent.VK_SPACE) {
+            // launch start
+            this.launch();
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
 
     }
 }
