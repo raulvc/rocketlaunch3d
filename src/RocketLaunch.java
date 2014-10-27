@@ -3,8 +3,11 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
+
+import com.microcrowd.loader.java3d.max3ds.Loader3DS;
+import com.sun.j3d.loaders.*;
+import com.sun.j3d.loaders.objectfile.ObjectFile;
 import com.sun.j3d.utils.universe.*;
-import com.sun.j3d.utils.geometry.*;
 
 public class RocketLaunch {
 
@@ -51,42 +54,33 @@ public class RocketLaunch {
         group.addChild(light1);
 
         // Set up the ambient light
-        Color3f ambientColor = new Color3f(.1f, .1f, .1f);
+        Color3f ambientColor = new Color3f(1.0f, 1.0f, 1.0f);
         AmbientLight ambientLightNode = new AmbientLight(ambientColor);
         ambientLightNode.setInfluencingBounds(bounds);
         group.addChild(ambientLightNode);
     }
 
     private void addObjects(BranchGroup group) {
-        Font3D f3d = new Font3D(new Font("TestFont", Font.PLAIN, 2),
-                new FontExtrusion());
-        Text3D text = new Text3D(f3d, new String("Java3D.org"), new Point3f(-3.5f,
-                -.5f, -4.5f));
-
-        text.setString("Java3D.org");
-        Color3f white = new Color3f(1.0f, 1.0f, 1.0f);
-        Color3f blue = new Color3f(.2f, 0.2f, 0.6f);
-        Appearance a = new Appearance();
-        Material m = new Material(blue, blue, blue, white, 80.0f);
-        m.setLightingEnable(true);
-        a.setMaterial(m);
-
-        Shape3D sh = new Shape3D();
-        sh.setGeometry(text);
-        sh.setAppearance(a);
         TransformGroup tg = new TransformGroup();
         Transform3D t3d = new Transform3D();
-        Transform3D tDown = new Transform3D();
-        Transform3D rot = new Transform3D();
         Vector3f v3f = new Vector3f(-1.6f, -1.35f, -6.5f);
         t3d.setTranslation(v3f);
-        rot.rotX(Math.PI / 5);
-        t3d.mul(rot);
-        v3f = new Vector3f(0, -1.4f, 0f);
-        tDown.setTranslation(v3f);
-        t3d.mul(tDown);
         tg.setTransform(t3d);
-        tg.addChild(sh);
+
+        // Rocket test
+        try{
+            Scene s = null;
+            ObjectFile f = new ObjectFile();
+            f.setFlags (ObjectFile.RESIZE | ObjectFile.TRIANGULATE | ObjectFile.STRIPIFY);
+            s = f.load("//home//raul//estudos//cg//trab//src//rocket.obj");
+//            s = new Loader3DS().load("//home//raul//estudos//cg//trab//src//rocket.3ds");
+            tg.addChild (s.getSceneGroup());
+        }
+        catch (java.io.FileNotFoundException ex){
+            //
+            ex.printStackTrace();
+        }
+
         group.addChild(tg);
 
     }
