@@ -13,6 +13,7 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener 
     private float sign = 1.0f;
     private Timer timer;
     private boolean inFlight = false;
+    // will use it to apply tranformations on the rocket
     private TransformGroup rocket_tg = null;
 
     public static void main(String[] args) {
@@ -39,7 +40,7 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener 
         // connecting canvas to keyboard listener
         canvas3D.addKeyListener(this);
         // connection timer to action listener
-        timer = new Timer(100,this);
+        timer = new Timer(10,this);
         SimpleUniverse universe = new SimpleUniverse(canvas3D);
         BranchGroup group = new BranchGroup();
         addObjects(group);
@@ -99,7 +100,6 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener 
 
     @Override
     public void keyPressed(KeyEvent e) {
-        System.out.println("passei aqui 1");
         if (e.getKeyCode()==KeyEvent.VK_SPACE) {
             // launch start
             inFlight = true;
@@ -112,10 +112,9 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener 
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("passei aqui 2");
         // action monitoring
         if (inFlight == true){
-            height += 0.08 * sign;
+            height += 0.05 * sign;
             Transform3D trans = new Transform3D();
             trans.setTranslation(new Vector3f(0.0f, height, -4.5f));
             rocket_tg.setTransform(trans);
