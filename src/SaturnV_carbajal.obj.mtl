@@ -1,0 +1,122 @@
+# File produced by Open Asset Import Library (http://www.assimp.sf.net)
+# (assimp v3.1.187496374)
+
+newmtl blinn10SG
+Kd 0 0 0
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+map_Kd SATURNVU.GIF
+
+newmtl blinn11SG
+Kd 0 0 0
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+map_Kd SATURNVW.BMP
+
+newmtl blinn1SG
+Kd 1 1 1
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+
+newmtl blinn2SG
+Kd 0 0 0
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+
+newmtl blinn3SG
+Kd 0.878431 0.788235 0.666667
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+
+newmtl blinn4SG
+Kd 0.839216 0.807843 0.776471
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+
+newmtl blinn5SG
+Kd 0.8 0.8 0.8
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+
+newmtl blinn6SG
+Kd 0.619608 0.619608 0.619608
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+
+newmtl blinn8SG
+Kd 0 0 0
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+map_Kd SATURNVT.GIF
+
+newmtl blinn9SG
+Kd 0 0 0
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+map_Kd SATURNVA.GIF
+
+newmtl fin_blinn1SG
+Kd 1 1 1
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+illum 1
+
+newmtl fin_blinn2SG
+Kd 0 0 0
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+illum 1
+
+newmtl initialShadingGr
+Kd 0.498039 0.498039 0.498039
+Ka 1 1 1
+Ks 1 1 1
+Ke 0 0 0
+d 1
+Ns 59
+illum 2
+
