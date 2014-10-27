@@ -6,7 +6,19 @@ import javax.vecmath.*;
 
 import com.sun.j3d.utils.universe.*;
 
-public class RocketLaunch extends JFrame implements KeyListener {
+public class RocketLaunch extends JFrame implements KeyListener, ActionListener {
+
+    private float height = -0.5f;
+    // going up by default
+    private float sign = 1.0f;
+    private Timer timer;
+    private boolean inFlight = false;
+    private TransformGroup rocket_tg = null;
+
+    public static void main(String[] args) {
+        RocketLaunch rl = new RocketLaunch();
+        rl.setUp();
+    }
 
     public RocketLaunch(){
         this.setName("Rocket Launch vAlpha");
@@ -18,19 +30,16 @@ public class RocketLaunch extends JFrame implements KeyListener {
         });
     }
 
-    public static void main(String[] args) {
-        RocketLaunch rl = new RocketLaunch();
-        rl.setUp();
-    }
-
     public void setUp() {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(1, 1, 2, 2));
         GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
         Canvas3D canvas3D = new Canvas3D(config);
         canvas3D.setSize(800, 600);
-        // connecting canvas to keyboard input
+        // connecting canvas to keyboard listener
         canvas3D.addKeyListener(this);
+        // connection timer to action listener
+        timer = new Timer(100,this);
         SimpleUniverse universe = new SimpleUniverse(canvas3D);
         BranchGroup group = new BranchGroup();
         addObjects(group);
@@ -72,37 +81,44 @@ public class RocketLaunch extends JFrame implements KeyListener {
         ground_tg.addChild(g);
 
         // positioning and loading rocket
-        TransformGroup rocket_tg = new TransformGroup();
+        rocket_tg = new TransformGroup();
         Transform3D rocket_t3d = new Transform3D();
         Vector3f rocket_v3f = new Vector3f(0.0f, -0.5f, -4.5f);
         rocket_t3d.setTranslation(rocket_v3f);
         rocket_tg.setTransform(rocket_t3d);
         Shape3D r = new Rocket().getRocket();
+        rocket_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         rocket_tg.addChild(r);
 
         group.addChild(ground_tg);
         group.addChild(rocket_tg);
     }
 
-    private void launch(){
-        System.out.println("teste");
-    }
-
     @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
+    public void keyTyped(KeyEvent e) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
+        System.out.println("passei aqui 1");
         if (e.getKeyCode()==KeyEvent.VK_SPACE) {
             // launch start
-            this.launch();
+            inFlight = true;
+            timer.start();
         }
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
+    public void keyReleased(KeyEvent e) {}
 
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        System.out.println("passei aqui 2");
+        // action monitoring
+        if (inFlight == true){
+            height += 0.08 * sign;
+            Transform3D trans = new Transform3D();
+            trans.setTranslation(new Vector3f(0.0f, height, -4.5f));
+            rocket_tg.setTransform(trans);
+        }
     }
 }
