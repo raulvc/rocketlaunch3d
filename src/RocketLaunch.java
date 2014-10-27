@@ -51,7 +51,7 @@ public class RocketLaunch {
         group.addChild(light1);
 
         // Set up the ambient light
-        Color3f ambientColor = new Color3f(0.5f, 0.5f, 0.5f);
+        Color3f ambientColor = new Color3f(Color.black);
         AmbientLight ambientLightNode = new AmbientLight(ambientColor);
         ambientLightNode.setInfluencingBounds(bounds);
         group.addChild(ambientLightNode);
@@ -70,7 +70,7 @@ public class RocketLaunch {
         // positioning and loading rocket
         TransformGroup rocket_tg = new TransformGroup();
         Transform3D rocket_t3d = new Transform3D();
-        Vector3f rocket_v3f = new Vector3f(0.0f, -1.35f, -6.5f);
+        Vector3f rocket_v3f = new Vector3f(0.0f, -0.5f, -4.5f);
         rocket_t3d.setTranslation(rocket_v3f);
         rocket_tg.setTransform(rocket_t3d);
         Shape3D r = new Rocket().getRocket();

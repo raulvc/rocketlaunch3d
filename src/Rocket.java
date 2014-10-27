@@ -36,7 +36,7 @@ public class Rocket{
             s = f.load("//home//raul//estudos//cg//trab//src//rocket.obj");
 
             // rocket texture
-            TextureLoader loader = new TextureLoader("//home//raul//estudos//cg//trab//src//texture.jpg", new Container());
+            TextureLoader loader = new TextureLoader("//home//raul//estudos//cg//trab//src//textures//rocket_texture.jpg", new Container());
             Texture texture = loader.getTexture();
             texture.setBoundaryModeS(Texture.WRAP);
             texture.setBoundaryModeT(Texture.WRAP);

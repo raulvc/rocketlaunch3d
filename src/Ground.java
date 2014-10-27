@@ -46,30 +46,25 @@ public class Ground extends Shape3D {
 
         int edgesize = 5;
         int moderator = 2;
-        float[] zlist = new float[20];
-        Random zMaker = new Random(System.currentTimeMillis());
-
-        for (int i = 0; i < 20; i++)
-            zlist[i] = (zMaker.nextFloat() * moderator) - 1;
 
         Point3f[][] grid = new Point3f[7][7];
 
-        grid[0][0] = new Point3f((0 - edgesize), zlist[0], (0 - edgesize));
+        grid[0][0] = new Point3f((0 - edgesize), 0, (0 - edgesize));
 
         for (int i = 0; i < 5; i++)
-            grid[i + 1][0] = new Point3f((i * lenUnit), zlist[i + 1], (0 - edgesize));
-        grid[6][0] = new Point3f((width + edgesize), zlist[5], (0 - edgesize));
+            grid[i + 1][0] = new Point3f((i * lenUnit), 0, (0 - edgesize));
+        grid[6][0] = new Point3f((width + edgesize), 0, (0 - edgesize));
 
         for (int j = 1; j < 6; j++) {
-            grid[0][j] = new Point3f((0 - edgesize), zlist[5 + ((j - 1) * 2)], ((j - 1) * widUnit));
+            grid[0][j] = new Point3f((0 - edgesize), 0, ((j - 1) * widUnit));
             for (int i = 1; i < 6; i++)
                 grid[i][j] = new Point3f(((i - 1) * lenUnit), 0, ((j - 1) * widUnit));
-            grid[6][j] = new Point3f((width + edgesize), zlist[5 + (j * 2)], ((j - 1) * widUnit));
+            grid[6][j] = new Point3f((width + edgesize), 0, ((j - 1) * widUnit));
         }
-        grid[0][6] = new Point3f((0 - edgesize), zlist[14], (length + edgesize));
+        grid[0][6] = new Point3f((0 - edgesize), 0, (length + edgesize));
         for (int i = 0; i < 5; i++)
-            grid[i + 1][6] = new Point3f((i * lenUnit), zlist[15 + i], (length + edgesize));
-        grid[6][6] = new Point3f((width + edgesize), zlist[19], (length + edgesize));
+            grid[i + 1][6] = new Point3f((i * lenUnit), 0, (length + edgesize));
+        grid[6][6] = new Point3f((width + edgesize), 0, (length + edgesize));
         for (int i = 0; i < 6; i++)
             for (int j = 0; j < 6; j++) {
                 pts[counter] = grid[i][j];
@@ -118,9 +113,9 @@ public class Ground extends Shape3D {
         Mser.setEmissiveColor(0.0f, 0.0f, 0.0f);
         Mser.setAmbientColor(0.1f, 0.1f, 0.1f);
         aper.setMaterial(Mser);
-        TextureLoader Texget=new TextureLoader("//home//raul//estudos//cg//trab//src//texture.jpg", null);
+        TextureLoader Texget=new TextureLoader("//home//raul//estudos//cg//trab//src//textures//ground_texture.jpg", null);
         Texture2D ourTex=(Texture2D) Texget.getTexture();
-        TextureAttributes texatt=new TextureAttributes(TextureAttributes.BLEND, new Transform3D(), new Color4f(1.0f, 1.0f, 1.0f, 1.0f), TextureAttributes.NICEST);
+        TextureAttributes texatt=new TextureAttributes(TextureAttributes.MODULATE, new Transform3D(), new Color4f(1.0f, 1.0f, 1.0f, 1.0f), TextureAttributes.NICEST);
         aper.setTextureAttributes(texatt);
         aper.setTexture(ourTex);
         ground.setGeometry(gi.getGeometryArray());
