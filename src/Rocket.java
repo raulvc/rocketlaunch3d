@@ -14,6 +14,8 @@ import java.util.Random;
 /**
  * Created by raul on 10/27/14.
  */
+
+// Rocket shape imported from an .obj model
 public class Rocket{
 
     private Shape3D rocket = null;

@@ -10,6 +10,8 @@ import java.util.Random;
 /**
  * Created by raul on 10/27/14.
  */
+
+// Regular rectangular shaped ground with texture
 public class Ground extends Shape3D {
 
     private Shape3D ground = null;
@@ -113,8 +115,8 @@ public class Ground extends Shape3D {
         Mser.setEmissiveColor(0.0f, 0.0f, 0.0f);
         Mser.setAmbientColor(0.1f, 0.1f, 0.1f);
         aper.setMaterial(Mser);
-        TextureLoader Texget=new TextureLoader("src//textures//ground_texture.jpg", null);
-        Texture2D ourTex=(Texture2D) Texget.getTexture();
+        TextureLoader texget = new TextureLoader("src//textures//ground_texture.jpg", null);
+        Texture2D ourTex=(Texture2D) texget.getTexture();
         TextureAttributes texatt=new TextureAttributes(TextureAttributes.MODULATE, new Transform3D(), new Color4f(1.0f, 1.0f, 1.0f, 1.0f), TextureAttributes.NICEST);
         aper.setTextureAttributes(texatt);
         aper.setTexture(ourTex);

@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
+import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.*;
 
 public class RocketLaunch extends JFrame implements KeyListener, ActionListener {
@@ -43,6 +44,7 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener 
         timer = new Timer(10,this);
         SimpleUniverse universe = new SimpleUniverse(canvas3D);
         BranchGroup group = new BranchGroup();
+        addBackground(group);
         addObjects(group);
         addLights(group);
         universe.getViewingPlatform().setNominalViewingTransform();
@@ -51,6 +53,18 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener 
         this.getContentPane().add(panel, BorderLayout.CENTER);
         this.pack();
         this.setVisible(true);
+    }
+
+    public void addBackground(BranchGroup group){
+        Background bg = new Background();
+        BoundingSphere sphere = new BoundingSphere(new Point3d(0,0,0), 100000);
+        bg.setApplicationBounds(sphere);
+        BranchGroup backGeoBranch = new BranchGroup();
+        Sphere s = new Skydome().getSkydome();
+        backGeoBranch.addChild(s);
+        bg.setGeometry(backGeoBranch);
+//        bg.setGeometry(group);
+        group.addChild(bg);
     }
 
     public void addLights(BranchGroup group) {
