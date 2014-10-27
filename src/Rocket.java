@@ -33,10 +33,10 @@ public class Rocket{
             Scene s = null;
             ObjectFile f = new ObjectFile();
             f.setFlags (ObjectFile.RESIZE | ObjectFile.TRIANGULATE | ObjectFile.STRIPIFY);
-            s = f.load("//home//raul//estudos//cg//trab//src//rocket.obj");
+            s = f.load("src//rocket.obj");
 
             // rocket texture
-            TextureLoader loader = new TextureLoader("//home//raul//estudos//cg//trab//src//textures//rocket_texture.jpg", new Container());
+            TextureLoader loader = new TextureLoader("src//textures//rocket_texture.jpg", new Container());
             Texture texture = loader.getTexture();
             texture.setBoundaryModeS(Texture.WRAP);
             texture.setBoundaryModeT(Texture.WRAP);
