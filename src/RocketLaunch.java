@@ -4,9 +4,6 @@ import javax.swing.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
-import com.sun.j3d.loaders.*;
-import com.sun.j3d.loaders.objectfile.ObjectFile;
-import com.sun.j3d.utils.image.TextureLoader;
 import com.sun.j3d.utils.universe.*;
 
 public class RocketLaunch {
@@ -61,43 +58,26 @@ public class RocketLaunch {
     }
 
     private void addObjects(BranchGroup group) {
-        TransformGroup tg = new TransformGroup();
-        Transform3D t3d = new Transform3D();
-        Vector3f v3f = new Vector3f(0.0f, -1.35f, -6.5f);
-        t3d.setTranslation(v3f);
-        tg.setTransform(t3d);
+        // positioning and loading ground
+        TransformGroup ground_tg = new TransformGroup();
+        Transform3D ground_t3d = new Transform3D();
+        Vector3f ground_v3f = new Vector3f(0.0f, -1.5f, 0.0f);
+        ground_t3d.setTranslation(ground_v3f);
+        ground_tg.setTransform(ground_t3d);
+        Shape3D g = new Ground().getGround();
+        ground_tg.addChild(g);
 
-        // Rocket
-        Shape3D rocket = null;
-        try{
-            Scene s = null;
-            ObjectFile f = new ObjectFile();
-            f.setFlags (ObjectFile.RESIZE | ObjectFile.TRIANGULATE | ObjectFile.STRIPIFY);
-            s = f.load("//home//raul//estudos//cg//trab//src//rocket.obj");
+        // positioning and loading rocket
+        TransformGroup rocket_tg = new TransformGroup();
+        Transform3D rocket_t3d = new Transform3D();
+        Vector3f rocket_v3f = new Vector3f(0.0f, -1.35f, -6.5f);
+        rocket_t3d.setTranslation(rocket_v3f);
+        rocket_tg.setTransform(rocket_t3d);
+        Shape3D r = new Rocket().getRocket();
+        rocket_tg.addChild(r);
 
-            // rocket texture
-            TextureLoader loader = new TextureLoader("//home//raul//estudos//cg//trab//src//texture.jpg", new Container());
-            Texture texture = loader.getTexture();
-            texture.setBoundaryModeS(Texture.WRAP);
-            texture.setBoundaryModeT(Texture.WRAP);
-            texture.setBoundaryColor( new Color4f( 0.0f, 1.0f, 0.0f, 0.0f ) );
-            TextureAttributes texAttr = new TextureAttributes();
-            //could be REPLACE, BLEND or DECAL instead of MODULATE
-            texAttr.setTextureMode(TextureAttributes.MODULATE);
-            Appearance ap = new Appearance();
-            ap.setTexture(texture);
-            ap.setTextureAttributes(texAttr);
-            ap.setMaterial(new Material(new Color3f(Color.black), new Color3f(Color.black), new Color3f(Color.red), new Color3f(Color.black), 1.0f));
-            rocket = (Shape3D) s.getSceneGroup().getChild(0);
-            rocket.setAppearance(ap);
-            s.getSceneGroup().removeChild(0);
-        }
-        catch (java.io.FileNotFoundException ex){
-            ex.printStackTrace();
-        }
-
-        tg.addChild(rocket);
-        group.addChild(tg);
+        group.addChild(ground_tg);
+        group.addChild(rocket_tg);
 
     }
 }
