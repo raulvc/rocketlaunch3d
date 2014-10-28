@@ -10,12 +10,13 @@ import com.sun.j3d.utils.universe.*;
 public class RocketLaunch extends JFrame implements KeyListener, ActionListener {
 
     private float height = -0.5f;
-    // going up by default
-    private float sign = 1.0f;
+    private float sign = 1.0f; // going up by default
     private Timer timer;
-    private boolean inFlight = false;
-    // will use it to apply tranformations on the rocket
-    private TransformGroup rocket_tg = null;
+    private boolean inFlight = false; // settings config phase
+    private TransformGroup rocket_tg = null; // will use it to apply tranformations on the rocket
+    // camera
+    private ViewingPlatform view_cam;
+    private Vector3d cam_vector;
 
     public static void main(String[] args) {
         RocketLaunch rl = new RocketLaunch();
@@ -47,7 +48,11 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener 
         addBackground(group);
         addObjects(group);
         addLights(group);
-        universe.getViewingPlatform().setNominalViewingTransform();
+//        universe.getViewingPlatform().setNominalViewingTransform();
+//        ViewInfo information = new ViewInfo(universe.getViewingPlatform().getViewers()[0].getView());
+
+        view_cam = universe.getViewingPlatform();
+        initCam();
         universe.addBranchGraph(group);
         panel.add(canvas3D);
         this.getContentPane().add(panel, BorderLayout.CENTER);
@@ -109,6 +114,34 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener 
         group.addChild(rocket_tg);
     }
 
+    private void initCam(){
+        cam_vector = new Vector3d();
+        Transform3D initialPos = new Transform3D();
+        initialPos.setTranslation(new Vector3f(0, 0f, 4f));
+        initialPos.lookAt(new Point3d(0, 2f, 2f), new Point3d(0, -1.5f, -5f), new Vector3d(0, 0f, -5f));
+        initialPos.invert();
+        view_cam.getViewPlatformTransform().setTransform(initialPos);
+    }
+
+    private void moveCam(Transform3D translation){
+        Vector3d v = new Vector3d();
+        Vector3d up = new Vector3d(0,0.05,0);
+        translation.get(v);
+        v.add(cam_vector);
+
+        Point3d cam_pos = new Point3d();
+        Point3d rocket_pos = new Point3d();
+
+        Transform3D camTrans = new Transform3D();
+        view_cam.getViewPlatformTransform().getTransform(camTrans);
+        camTrans.setTranslation(v);
+        translation.transform(rocket_pos);
+        camTrans.transform(cam_pos);
+        camTrans.lookAt(cam_pos, rocket_pos, up);
+        camTrans.invert();
+        view_cam.getViewPlatformTransform().setTransform(camTrans);
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {}
 
@@ -132,6 +165,7 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener 
             Transform3D trans = new Transform3D();
             trans.setTranslation(new Vector3f(0.0f, height, -4.5f));
             rocket_tg.setTransform(trans);
+//            moveCam(trans);
         }
     }
 }
