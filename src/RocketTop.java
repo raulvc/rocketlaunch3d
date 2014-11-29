@@ -34,7 +34,7 @@ public class RocketTop {
             s = f.load("src//rocket_top.obj");
 
             // rocket texture
-            TextureLoader loader = new TextureLoader("src//textures//rocket_texture.jpg", new Container());
+            TextureLoader loader = new TextureLoader("src//textures//rocket_top.jpg", new Container());
             Texture texture = loader.getTexture();
             texture.setBoundaryModeS(Texture.WRAP);
             texture.setBoundaryModeT(Texture.WRAP);

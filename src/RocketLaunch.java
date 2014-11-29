@@ -86,6 +86,8 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
         addObjects(this.root);
         addLights(this.root);
 
+        this.root.compile();
+
         this.universe.addBranchGraph(this.root);
 
         panel.add(this.canvas);
@@ -108,7 +110,7 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
 
     public void addLights(BranchGroup group) {
         // putting up some directional light on the rocket
-        BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 3000.0);
+        BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 10000.0);
 
         Color3f light1Color = new Color3f(Color.white);
         Vector3f light1Direction = new Vector3f(4.0f, -7.0f, -12.0f);
@@ -118,7 +120,7 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
         group.addChild(light1);
 
         // Set up the ambient light
-        Color3f ambientColor = new Color3f(Color.black);
+        Color3f ambientColor = new Color3f(Color.white);
         AmbientLight ambientLightNode = new AmbientLight(ambientColor);
         ambientLightNode.setInfluencingBounds(bounds);
         group.addChild(ambientLightNode);
@@ -185,6 +187,7 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
             }
             else{
                 // deallocate rocket base
+                this.inFlight = false;
                 this.deallocated = true;
             }
         }
@@ -232,7 +235,6 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
             top_trans.setTranslation(new Vector3f(xpos + top_xfactor, ypos + top_yfactor, zpos + top_zfactor));
             this.rocket_bot_tg.setTransform(bot_trans);
             this.rocket_top_tg.setTransform(top_trans);
-
             moveCam(bot_trans);
         }
     }
