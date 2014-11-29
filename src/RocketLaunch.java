@@ -13,6 +13,8 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
     private float height;
     private float sign = 1.0f; // going up by default
     private Timer timer;
+    private int shakeleft = 1; // for swapping shaky camera direction
+    private int shakecount = 0;
     private boolean inFlight = false; // settings config phase
     private TransformGroup rocket_tg = null; // will use it to apply tranformations on the rocket
 
@@ -129,6 +131,22 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
         camera.getTransform(trans);
         trans.get(vector);
         vector.y = height;
+        // moving camera to the back during init flight
+        if (vector.z < 1.36) {
+            vector.z += 0.003;
+        }
+        else{
+            // making some shaky camera effects on high altitudes
+            if (this.shakeleft>0)
+                vector.x += 0.003;
+            else
+                vector.x -= 0.003;
+            this.shakecount += 1;
+            if (shakecount > 5) {
+                this.shakeleft *= -1;
+                this.shakecount = 0;
+            }
+        }
         trans.set(vector);
         camera.setTransform(trans);
     }
