@@ -11,6 +11,8 @@ import com.sun.j3d.utils.universe.*;
 
 public class RocketLaunch extends JFrame implements KeyListener, ActionListener, MouseMotionListener {
     // initial pos
+    private Sounds sound = new Sounds();
+    private Thread s1 = new Thread(sound);
     private float xpos = 0.0f;
     private float ypos = -0.1f;
     private float zpos = -4.5f;
@@ -181,6 +183,7 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
         if (e.getKeyCode()==KeyEvent.VK_SPACE) {
             if (!this.inFlight) {
                 // launch start
+                s1.start();
                 this.orbit.goHome();
                 this.inFlight = true;
                 this.timer.start();
