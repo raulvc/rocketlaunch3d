@@ -22,11 +22,14 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     private float top_yfactor = 2.362f;
     private float top_zfactor = -0.2f;
     // bot part when detached
-    private float d_xpos = -1.0f;
-    private float d_ypos = -1.0f;
-    private float d_zpos = -1.0f;
+    private float d_xpos;
+    private float d_ypos;
+    private float d_zpos;
     // default acceleration
     private float def_movespeed = 1.0f;
+    // current flight speed
+    private float cur_speed = 0.0f;
+    private float bot_falling_speed = 1.0f; // when positive it's still going up
     // for swapping x values when shaking
     private int shakeleft = 1;
     private int shakecount = 0;
@@ -201,57 +204,112 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 this.orbit.goHome();
                 this.inFlight = true;
             }
-            else{
+            else if (!this.deallocated){
                 // deallocate rocket base
                 this.inFlight = false;
+                initDetachedFall();
                 this.deallocated = true;
             }
         }
     }
 
+    private void initDetachedFall(){
+        // initializing bottom part fall
+        d_xpos = xpos;
+        d_ypos = ypos;
+        d_zpos = zpos;
+        xpos += top_xfactor;
+        ypos += top_yfactor;
+        zpos += top_zfactor;
+        bot_falling_speed = cur_speed;
+    }
+
     @Override
     public void keyReleased(KeyEvent e) {}
 
-    private void setNewCoordinates(Transform3D trans){
+    private void setNewCoordinates(Transform3D trans, boolean dealloc){
         Vector3d vector = new Vector3d();
         trans.get(vector);
-        this.xpos = (float) vector.x;
-        this.ypos = (float) vector.y;
-        this.zpos = (float) vector.z;
+        if (!dealloc) {
+            this.xpos = (float) vector.x;
+            this.ypos = (float) vector.y;
+            this.zpos = (float) vector.z;
+        }
+        else{
+            this.d_xpos = (float) vector.x;
+            this.d_ypos = (float) vector.y;
+            this.d_zpos = (float) vector.z;
+        }
     }
 
     private Transform3D accelerate(float x, float y, float z, boolean topPart){
         // determine acceleration
         Transform3D trans = new Transform3D();
-        if (y < 1.0)
+        if (y < 1.0) {
             y += 0.01;
-        else if (y < 3.0)
+            cur_speed = (float) 0.01;
+        }
+        else if (y < 3.0) {
             y += 0.02;
-        else if (y < 5.0)
+            cur_speed = (float) 0.02;
+        }
+        else if (y < 5.0) {
             y += 0.03;
-        else if (y < 10.0)
+            cur_speed = (float) 0.03;
+        }
+        else if (y < 10.0) {
             y += 0.05;
-        else
+            cur_speed = (float) 0.05;
+        }
+        else {
             // default speed
             y += def_movespeed;
+            cur_speed = def_movespeed;
+        }
         if (topPart)
             trans.setScale(1.4);
         trans.setTranslation(new Vector3f(x, y, z));
         return trans;
     }
 
-    private void deaccelerate(float x, float y, float z){
-        // for slowing down objects
-
+    private Transform3D decelerate(float x, float y, float z, float speed, boolean topPart){
+        // for slowing down and free falling objects
+        Transform3D trans = new Transform3D();
+        if (speed > 0.7){
+            // just started losing speed
+            speed -= 0.05;
+            trans.rotX(Math.PI/40);
+        }
+        else if (speed > 0.4){
+            // losing speed steadily
+            speed -= 0.1;
+            trans.rotX(Math.PI/30);
+        }
+        else if (speed > -0.1){
+            speed -= 0.5;
+            trans.rotX(Math.PI/25);
+        }
+        else{
+            // stabilize fall
+            speed -= 1.0;
+            trans.rotX(Math.PI/20);
+        }
+        if (topPart)
+            trans.setScale(1.4);
+        else
+            this.bot_falling_speed = speed;
+        y += speed;
+        trans.setTranslation(new Vector3f(x, y, z));
+        return trans;
     }
 
     public void update(){
         // action monitoring
         if (inFlight){
-            if (this.ypos > 25.0)
+            if (this.ypos > 23.0)
                 shakeRocket();
             Transform3D movementTrans = accelerate(xpos, ypos, zpos, false);
-            setNewCoordinates(movementTrans);
+            setNewCoordinates(movementTrans, false);
             // my models have different, incompatible scales so I have to do this little workaround
             Transform3D topCorrection = new Transform3D();
             topCorrection.setScale(1.4);
@@ -263,22 +321,15 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
             moveCam(movementTrans);
         }
         else if (deallocated){
-            if (d_ypos < 0) {
-                // initializing bottom part fall
-                d_xpos = xpos;
-                d_ypos = ypos;
-                d_zpos = zpos;
-                xpos += top_xfactor;
-                ypos += top_yfactor;
-                zpos += top_zfactor;
-            }
             // bot part
-            deaccelerate(d_xpos, d_ypos, d_zpos);
+            Transform3D detachedBotTrans = decelerate(d_xpos, d_ypos, d_zpos, bot_falling_speed, false);
+            setNewCoordinates(detachedBotTrans, true);
+            this.rocket_bot_tg.setTransform(detachedBotTrans);
 
             // top part
             shakeRocket();
             Transform3D topMovementTrans = accelerate(xpos, ypos, zpos, true);
-            setNewCoordinates(topMovementTrans);
+            setNewCoordinates(topMovementTrans, false);
             this.rocket_top_tg.setTransform(topMovementTrans);
             moveCam(topMovementTrans);
         }
