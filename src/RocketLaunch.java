@@ -20,8 +20,6 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
     private float top_yfactor = 2.362f;
     private float top_zfactor = -0.2f;
     private float def_movespeed = 1.0f; // acceleration
-    private int def_refreshrate = 10; // action rate in ms
-    private Timer timer;
     private int shakeleft = 1; // for swapping x direction when shaking
     private int shakecount = 0;
     private boolean inFlight = false; // settings config phase
@@ -64,8 +62,6 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
         // connecting canvas to keyboard/mousemotion listener
         this.canvas.addKeyListener(this);
         this.canvas.addMouseMotionListener(this);
-        // connection timer to action listener
-        this.timer = new Timer(this.def_refreshrate,this);
         this.universe = new SimpleUniverse(this.canvas);
 
         this.camera = this.universe.getViewingPlatform().getViewPlatformTransform();
@@ -87,6 +83,10 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
         addBackground(this.root);
         addObjects(this.root);
         addLights(this.root);
+
+        RocketBehavior test = new RocketBehavior(this);
+        test.setSchedulingBounds(new BoundingSphere(new Point3d( 0.0, 0.0, 0.0 ), 100000.0));
+        this.root.addChild(test);
 
         this.root.compile();
 
@@ -186,7 +186,6 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
                 s1.start();
                 this.orbit.goHome();
                 this.inFlight = true;
-                this.timer.start();
             }
             else{
                 // deallocate rocket base
@@ -216,6 +215,10 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
 
     @Override
     public void actionPerformed(ActionEvent e) {
+       update();
+    }
+
+    public void update(){
         // action monitoring
         if (inFlight){
             accelerate();
