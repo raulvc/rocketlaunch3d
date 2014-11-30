@@ -19,7 +19,6 @@ public class RocketBehavior extends Behavior {
 
     @Override
     public void processStimulus(Enumeration enumeration) {
-        System.out.println("passei aqui");
         this.rl.update();
         wakeupOn(wakeupCondition);
     }

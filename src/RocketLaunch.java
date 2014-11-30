@@ -9,7 +9,7 @@ import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.*;
 
 
-public class RocketLaunch extends JFrame implements KeyListener, ActionListener, MouseMotionListener {
+public class RocketLaunch extends JFrame implements KeyListener, MouseMotionListener {
     // initial pos
     private Sounds sound = new Sounds();
     private Thread s1 = new Thread(sound);
@@ -211,11 +211,6 @@ public class RocketLaunch extends JFrame implements KeyListener, ActionListener,
         else
             // default speed
             ypos += def_movespeed;
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-       update();
     }
 
     public void update(){
