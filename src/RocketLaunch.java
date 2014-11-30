@@ -34,12 +34,16 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     // for swapping x values when shaking
     private int shakeleft = 1;
     private int shakecount = 0;
-    // first stage of flight
-    private boolean inFlight = false;
-    // second stage of flight
-    private boolean deallocated = false;
-    // final stage of flight
-    private boolean outOfGas = false;
+
+    /*
+    States the scene can assume:
+    0 -> initial, static
+    1 -> initial flight
+    2 -> detachment
+    3 -> out of gas / free falling
+     */
+    private int state = 0;
+
     // camera and grouping
     private TransformGroup rocket_bot_tg  = null; // will use it to apply transformations on bottom part of the rocket
     private TransformGroup rocket_top_tg  = null; // will use it to apply transformations on top part of the rocket
@@ -182,9 +186,11 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         Vector3d vector = new Vector3d();
         this.camera.getTransform(trans);
         trans.get(vector);
-        if (this.inFlight)
+        if (state == 1)
+            // cam moves along both parts of the rocket
             vector.y = (2*ypos+top_yfactor)/2;
         else
+            // cam follows top part
             vector.y = (2*ypos-top_yfactor)/2;
         // moving camera to the back during init flight
         if (vector.z < 6.0)
@@ -199,17 +205,21 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode()==KeyEvent.VK_SPACE) {
-            if (!this.inFlight) {
-                // launch start
-                s1.start();
-                this.orbit.goHome();
-                this.inFlight = true;
-            }
-            else if (!this.deallocated){
-                // deallocate rocket base
-                this.inFlight = false;
-                initDetachedFall();
-                this.deallocated = true;
+            switch (state){
+                case 0:
+                    // launch start
+                    s1.start();
+                    this.orbit.goHome();
+                    state = 1;
+                    break;
+                case 1:
+                    // deallocate rocket base
+                    initDetachedFall();
+                    state = 2;
+                    break;
+                case 2:
+                    // start free fall
+                    state = 3;
             }
         }
     }
@@ -318,33 +328,37 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
 
     public void update(){
         // action monitoring
-        if (inFlight){
-            if (this.ypos > 23.0)
+        switch (state){
+            case 1:
+                /* TAKING FLIGHT */
+                if (this.ypos > 23.0)
+                    shakeRocket();
+                Transform3D movementTrans = accelerate(xpos, ypos, zpos, false);
+                setNewCoordinates(movementTrans, false);
+                // my models have different, incompatible scales so I have to do this little workaround
+                Transform3D topCorrection = new Transform3D();
+                topCorrection.setScale(1.4);
+                topCorrection.setTranslation(new Vector3f(xpos + top_xfactor, ypos + top_yfactor, zpos + top_zfactor));
+
+                // adapting obj size
+                this.rocket_bot_tg.setTransform(movementTrans);
+                this.rocket_top_tg.setTransform(topCorrection);
+                moveCam(movementTrans);
+                break;
+            case 2:
+                /* DETACHING BOTTOM */
+                // bot part
+                Transform3D detachedBotTrans = decelerate(d_xpos, d_ypos, d_zpos, bot_falling_speed, d_angle, false);
+                setNewCoordinates(detachedBotTrans, true);
+                this.rocket_bot_tg.setTransform(detachedBotTrans);
+
+                // top part
                 shakeRocket();
-            Transform3D movementTrans = accelerate(xpos, ypos, zpos, false);
-            setNewCoordinates(movementTrans, false);
-            // my models have different, incompatible scales so I have to do this little workaround
-            Transform3D topCorrection = new Transform3D();
-            topCorrection.setScale(1.4);
-            topCorrection.setTranslation(new Vector3f(xpos + top_xfactor, ypos + top_yfactor, zpos + top_zfactor));
-
-            // adapting obj size
-            this.rocket_bot_tg.setTransform(movementTrans);
-            this.rocket_top_tg.setTransform(topCorrection);
-            moveCam(movementTrans);
-        }
-        else if (deallocated){
-            // bot part
-            Transform3D detachedBotTrans = decelerate(d_xpos, d_ypos, d_zpos, bot_falling_speed, d_angle, false);
-            setNewCoordinates(detachedBotTrans, true);
-            this.rocket_bot_tg.setTransform(detachedBotTrans);
-
-            // top part
-            shakeRocket();
-            Transform3D topMovementTrans = accelerate(xpos, ypos, zpos, true);
-            setNewCoordinates(topMovementTrans, false);
-            this.rocket_top_tg.setTransform(topMovementTrans);
-            moveCam(topMovementTrans);
+                Transform3D topMovementTrans = accelerate(xpos, ypos, zpos, true);
+                setNewCoordinates(topMovementTrans, false);
+                this.rocket_top_tg.setTransform(topMovementTrans);
+                moveCam(topMovementTrans);
+                break;
         }
     }
 
