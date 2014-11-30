@@ -227,6 +227,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
 
     private void initDetachedFall(){
         // initializing bottom part fall
+        sound.uncouple();
         d_xpos = xpos;
         d_ypos = ypos;
         d_zpos = zpos;

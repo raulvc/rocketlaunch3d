@@ -15,7 +15,18 @@ import sun.audio.*;
 public class Sounds implements Runnable {
 
     private Clip clip;
-
+    
+    public void uncouple(){
+        try {
+            AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File("src//sounds//decoupling_sound.wav"));
+            clip = AudioSystem.getClip();
+            clip.open(inputStream);
+            clip.start();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+    }
+            
     public void run() {
         try {
             AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File("src//sounds//rocket_sound.wav"));
