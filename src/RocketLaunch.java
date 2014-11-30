@@ -17,6 +17,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     private float xpos = 0.0f;
     private float ypos = -0.1f;
     private float zpos = -4.5f;
+    private float angle = 0;
     // positioning of the bot part of the rocket
     private float top_xfactor = 0.037f;
     private float top_yfactor = 2.362f;
@@ -287,35 +288,52 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         // for slowing down and free falling objects
         Transform3D trans = new Transform3D();
         Transform3D secondAxis = new Transform3D();
+        if (speed > 0.999){
+            // don't rotate immediately
+            speed -= 0.0004;
+        }
+        else
         if (speed > 0.2){
             // just started losing speed
-            speed -= 0.0002;
-            angle += Math.PI / 170;
+            speed -= 0.0004;
+            angle += Math.PI / 250;
             trans.rotY(angle);
             secondAxis.rotZ(angle);
         }
         else if (speed > -1.0){
             speed -= 0.0005;
-            angle += Math.PI / 160;
+            angle += Math.PI / 240;
             trans.rotY(angle);
             secondAxis.rotZ(angle);
         }
         else if (speed > -2.0){
             // losing speed steadily
+            speed -= 0.001;
+            angle += Math.PI / 230;
+            trans.rotY(angle);
+            secondAxis.rotZ(angle);
+        }
+        else if (speed > -6.0){
+            // losing speed steadily
             speed -= 0.01;
-            angle += Math.PI / 150;
+            angle += Math.PI / 220;
             trans.rotY(angle);
             secondAxis.rotZ(angle);
         }
         else{
             // stabilize fall
             speed -= 1.0;
-            trans.rotX(angle+Math.PI/80);
-            secondAxis.rotZ(angle+Math.PI/80);
+            angle += Math.PI/200;
+            trans.rotX(angle);
+            secondAxis.rotZ(angle);
         }
-        trans.mul(secondAxis);
-        if (topPart)
+        if (secondAxis != null)
+            trans.mul(secondAxis);
+        if (topPart) {
             trans.setScale(1.4);
+            this.cur_speed = speed;
+            this.angle = angle;
+        }
         else {
             this.bot_falling_speed = speed;
             this.d_angle = angle;
@@ -359,6 +377,12 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 this.rocket_top_tg.setTransform(topMovementTrans);
                 moveCam(topMovementTrans);
                 break;
+            case 3:
+                /* FREE FALL */
+                Transform3D fallTopTrans = decelerate(xpos, ypos, zpos, cur_speed, angle, true);
+                setNewCoordinates(fallTopTrans, false);
+                this.rocket_top_tg.setTransform(fallTopTrans);
+                moveCam(fallTopTrans);
         }
     }
 
@@ -376,12 +400,8 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     }
 
     @Override
-    public void mouseDragged(MouseEvent mouseEvent) {
-
-    }
+    public void mouseDragged(MouseEvent mouseEvent) {}
 
     @Override
-    public void mouseMoved(MouseEvent mouseEvent) {
-
-    }
+    public void mouseMoved(MouseEvent mouseEvent) {}
 }
