@@ -13,21 +13,32 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     // initial pos
     private Sounds sound = new Sounds();
     private Thread s1 = new Thread(sound);
+    // positioning of the top part of the rocket
     private float xpos = 0.0f;
     private float ypos = -0.1f;
     private float zpos = -4.5f;
+    // positioning of the bot part of the rocket
     private float top_xfactor = 0.037f;
     private float top_yfactor = 2.362f;
     private float top_zfactor = -0.2f;
-    private float def_movespeed = 1.0f; // acceleration
-    private int shakeleft = 1; // for swapping x direction when shaking
+    // bot part when detached
+    private float d_xpos = -1.0f;
+    private float d_ypos = -1.0f;
+    private float d_zpos = -1.0f;
+    // default acceleration
+    private float def_movespeed = 1.0f;
+    // for swapping x values when shaking
+    private int shakeleft = 1;
     private int shakecount = 0;
-    private boolean inFlight = false; // settings config phase
+    // first stage of flight
+    private boolean inFlight = false;
+    // second stage of flight
     private boolean deallocated = false;
-
+    // final stage of flight
+    private boolean outOfGas = false;
     // camera and grouping
-    private TransformGroup rocket_bot_tg  = null; // will use it to apply tranformations on bottom part of the rocket
-    private TransformGroup rocket_top_tg  = null; // will use it to apply tranformations on top part of the rocket
+    private TransformGroup rocket_bot_tg  = null; // will use it to apply transformations on bottom part of the rocket
+    private TransformGroup rocket_top_tg  = null; // will use it to apply transformations on top part of the rocket
     private GraphicsConfiguration config  = null;
     private Canvas3D canvas 			  = null;
     private SimpleUniverse universe 	  = null;
@@ -78,20 +89,20 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
 
         this.root = new BranchGroup();
 
-
         // adding stuff to the scene
         addBackground(this.root);
         addObjects(this.root);
         addLights(this.root);
-
-        RocketBehavior test = new RocketBehavior(this);
-        test.setSchedulingBounds(new BoundingSphere(new Point3d( 0.0, 0.0, 0.0 ), 100000.0));
-        this.root.addChild(test);
-
+        // adding a behavior to fix flickering when using conventional timers
+        RocketBehavior screenUpdater = new RocketBehavior(this);
+        screenUpdater.setSchedulingBounds(new BoundingSphere(new Point3d( 0.0, 0.0, 0.0 ), 100000.0));
+        this.root.addChild(screenUpdater);
+        // make optimizations on the scene objects
         this.root.compile();
 
         this.universe.addBranchGraph(this.root);
 
+        // swing stuff
         panel.add(this.canvas);
         this.getContentPane().add(panel, BorderLayout.CENTER);
         this.pack();
@@ -167,9 +178,12 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         Vector3d vector = new Vector3d();
         this.camera.getTransform(trans);
         trans.get(vector);
-        vector.y = (2*ypos+top_yfactor)/2;
+        if (this.inFlight)
+            vector.y = (2*ypos+top_yfactor)/2;
+        else
+            vector.y = (2*ypos-top_yfactor)/2;
         // moving camera to the back during init flight
-        if (vector.z < 5.0)
+        if (vector.z < 6.0)
             vector.z += 0.006;
         trans.set(vector);
         this.camera.setTransform(trans);
@@ -198,45 +212,88 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     @Override
     public void keyReleased(KeyEvent e) {}
 
-    private void accelerate(){
+    private void setNewCoordinates(Transform3D trans){
+        Vector3d vector = new Vector3d();
+        trans.get(vector);
+        this.xpos = (float) vector.x;
+        this.ypos = (float) vector.y;
+        this.zpos = (float) vector.z;
+    }
+
+    private Transform3D accelerate(float x, float y, float z, boolean topPart){
         // determine acceleration
-        if (ypos < 1.0)
-            ypos += 0.01;
-        else if (ypos < 3.0)
-            ypos += 0.02;
-        else if (ypos < 5.0)
-            ypos += 0.03;
-        else if (ypos < 10.0)
-            ypos += 0.05;
+        Transform3D trans = new Transform3D();
+        if (y < 1.0)
+            y += 0.01;
+        else if (y < 3.0)
+            y += 0.02;
+        else if (y < 5.0)
+            y += 0.03;
+        else if (y < 10.0)
+            y += 0.05;
         else
             // default speed
-            ypos += def_movespeed;
+            y += def_movespeed;
+        if (topPart)
+            trans.setScale(1.4);
+        trans.setTranslation(new Vector3f(x, y, z));
+        return trans;
+    }
+
+    private void deaccelerate(float x, float y, float z){
+        // for slowing down objects
+
     }
 
     public void update(){
         // action monitoring
         if (inFlight){
-            accelerate();
-            if (this.ypos > 25.0){
-                // making some shaky cam effects
-                if (this.shakeleft>0)
-                    this.xpos += 0.002;
-                else
-                    this.xpos -= 0.002;
-                this.shakecount += 1;
-                if (shakecount > 8) {
-                    this.shakeleft *= -1;
-                    this.shakecount = 0;
-                }
+            if (this.ypos > 25.0)
+                shakeRocket();
+            Transform3D movementTrans = accelerate(xpos, ypos, zpos, false);
+            setNewCoordinates(movementTrans);
+            // my models have different, incompatible scales so I have to do this little workaround
+            Transform3D topCorrection = new Transform3D();
+            topCorrection.setScale(1.4);
+            topCorrection.setTranslation(new Vector3f(xpos + top_xfactor, ypos + top_yfactor, zpos + top_zfactor));
+
+            // adapting obj size
+            this.rocket_bot_tg.setTransform(movementTrans);
+            this.rocket_top_tg.setTransform(topCorrection);
+            moveCam(movementTrans);
+        }
+        else if (deallocated){
+            if (d_ypos < 0) {
+                // initializing bottom part fall
+                d_xpos = xpos;
+                d_ypos = ypos;
+                d_zpos = zpos;
+                xpos += top_xfactor;
+                ypos += top_yfactor;
+                zpos += top_zfactor;
             }
-            Transform3D bot_trans = new Transform3D();
-            bot_trans.setTranslation(new Vector3f(xpos, ypos, zpos));
-            Transform3D top_trans = new Transform3D();
-            top_trans.setScale(1.4);
-            top_trans.setTranslation(new Vector3f(xpos + top_xfactor, ypos + top_yfactor, zpos + top_zfactor));
-            this.rocket_bot_tg.setTransform(bot_trans);
-            this.rocket_top_tg.setTransform(top_trans);
-            moveCam(bot_trans);
+            // bot part
+            deaccelerate(d_xpos, d_ypos, d_zpos);
+
+            // top part
+            shakeRocket();
+            Transform3D topMovementTrans = accelerate(xpos, ypos, zpos, true);
+            setNewCoordinates(topMovementTrans);
+            this.rocket_top_tg.setTransform(topMovementTrans);
+            moveCam(topMovementTrans);
+        }
+    }
+
+    private void shakeRocket(){
+        // making some shaky cam effects
+        if (this.shakeleft>0)
+            this.xpos += 0.002;
+        else
+            this.xpos -= 0.002;
+        this.shakecount += 1;
+        if (shakecount > 8) {
+            this.shakeleft *= -1;
+            this.shakecount = 0;
         }
     }
 

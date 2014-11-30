@@ -13,7 +13,6 @@ public class RocketBehavior extends Behavior {
 
     @Override
     public void initialize() {
-//        System.out.println("passei aqui");
         wakeupOn(wakeupCondition);
     }
 
