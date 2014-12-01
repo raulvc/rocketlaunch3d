@@ -1,19 +1,20 @@
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.media.j3d.*;
-import javax.vecmath.*;
-import javax.swing.JOptionPane;
-
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Timer;
+import java.util.TimerTask;
+import javax.media.j3d.*;
+import javax.swing.*;
+import javax.swing.JOptionPane;
+import javax.vecmath.*;
 
 public class RocketLaunch extends JFrame implements KeyListener, MouseMotionListener {
 
     // initial pos
-    private int fuel_base, fuel_top;
+    private volatile int fuel_base, fuel_top;
     private Sounds sound = new Sounds();
     private Thread s1 = new Thread(sound);
     // positioning of the top part of the rocket
@@ -146,6 +147,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 JOptionPane.showConfirmDialog(null, fuel_inputs, "Insira a quantidade de combustivel", JOptionPane.OK_CANCEL_OPTION);
             }
         }
+        timer_fuel();
     }
 
     public void addBackground(BranchGroup group) {
@@ -220,9 +222,20 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         if (state == 1) // cam moves along both parts of the rocket
         {
             vector.y = (2 * ypos + top_yfactor) / 2;
+            if (fuel_base <= 0) {
+                // deallocate rocket base
+                initDetachedFall();
+                state = 2;
+            }
         } else // cam follows top part
         {
             vector.y = (2 * ypos - top_yfactor) / 2;
+            if (fuel_top <= 0 && state == 2) {
+                // start free fall
+                state = 3;
+                sound.stopflight();
+                sound.turbines_off();
+            }
         }
         // moving camera to the back during init flight
         if (vector.z < 6.0) {
@@ -434,5 +447,44 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
 
     @Override
     public void mouseMoved(MouseEvent mouseEvent) {
+    }
+
+    public void setfuel_base(int fuel_base) {
+        this.fuel_base = fuel_base;
+    }
+
+    public void setfuel_top(int fuel_top) {
+        this.fuel_top = fuel_top;
+    }
+
+    public int getfuel_base() {
+        return fuel_base;
+    }
+
+    public int getfuel_top() {
+        return fuel_top;
+    }
+
+    public int getstate() {
+        return state;
+    }
+
+    public void setstate(int state) {
+        this.state = state;
+    }
+
+    public void timer_fuel() {
+        Timer t = new Timer();
+        t.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                //elapsed time
+                if (state == 1) {
+                    fuel_base = fuel_base - 1;
+                } else if (state == 2) {
+                    fuel_top = fuel_top - 1;
+                }
+            }
+
+        }, 1000, 1000);
     }
 }
