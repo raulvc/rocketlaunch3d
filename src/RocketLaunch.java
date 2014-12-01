@@ -120,21 +120,32 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
 
         this.getContentPane().add(panel, BorderLayout.CENTER);
         this.pack();
+        this.setLocationRelativeTo(null);
         this.setVisible(true);
 
-        //fuel input box
+        //fuel input box panel
         JTextField fuel1 = new JTextField(5);
         JTextField fuel2 = new JTextField(5);
         JPanel fuel_inputs = new JPanel();
         fuel_inputs.add(new JLabel("Litros de combustível da base:"));
         fuel_inputs.add(fuel1);
-fuel_inputs.setPreferredSize(new Dimension(200, 100));         
-//fuel_inputs.add(Box.createHorizontalStrut(30)); // a spacer
+        fuel_inputs.setPreferredSize(new Dimension(200, 100));
         fuel_inputs.add(new JLabel("Litros de combustível do topo:"));
         fuel_inputs.add(fuel2);
-        JOptionPane.showConfirmDialog(null, fuel_inputs,"Insira a quantidade de combustivel", JOptionPane.OK_CANCEL_OPTION);
-        fuel_base =  Integer.parseInt(fuel1.getText());
-        fuel_top =   Integer.parseInt(fuel2.getText());
+        JOptionPane.showConfirmDialog(null, fuel_inputs, "Insira a quantidade de combustivel", JOptionPane.OK_CANCEL_OPTION);
+        boolean incorrect = true;
+        //accept only numbers on fuel fields
+        while (incorrect) {
+            try {
+                fuel_base = Integer.parseInt(fuel1.getText());
+                fuel_top = Integer.parseInt(fuel2.getText());
+                incorrect = false;
+            } catch (NumberFormatException nfe) {
+                fuel1.setText("");
+                fuel2.setText("");
+                JOptionPane.showConfirmDialog(null, fuel_inputs, "Insira a quantidade de combustivel", JOptionPane.OK_CANCEL_OPTION);
+            }
+        }
     }
 
     public void addBackground(BranchGroup group) {
