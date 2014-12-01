@@ -222,6 +222,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                     // start free fall
                     state = 3;
                     sound.stopflight();
+                    sound.turbines_off();
             }
         }
     }
