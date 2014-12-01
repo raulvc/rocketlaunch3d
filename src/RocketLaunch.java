@@ -1,16 +1,19 @@
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
+import javax.swing.JOptionPane;
 
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.*;
 
-
 public class RocketLaunch extends JFrame implements KeyListener, MouseMotionListener {
+
     // initial pos
+    private int fuel_base, fuel_top;
     private Sounds sound = new Sounds();
     private Thread s1 = new Thread(sound);
     // positioning of the top part of the rocket
@@ -37,31 +40,32 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     private int shakecount = 0;
 
     /*
-    States the scene can assume:
-    0 -> initial, static
-    1 -> initial flight
-    2 -> detachment
-    3 -> out of gas / free falling
+     States the scene can assume:
+     0 -> initial, static
+     1 -> initial flight
+     2 -> detachment
+     3 -> out of gas / free falling
      */
     private int state = 0;
 
     // camera and grouping
-    private TransformGroup rocket_bot_tg  = null; // will use it to apply transformations on bottom part of the rocket
-    private TransformGroup rocket_top_tg  = null; // will use it to apply transformations on top part of the rocket
-    private GraphicsConfiguration config  = null;
-    private Canvas3D canvas 			  = null;
-    private SimpleUniverse universe 	  = null;
-    private BranchGroup root			  = null;
-    private TransformGroup camera		  = null;
-    private OrbitBehavior orbit           = null;
-    private Transform3D orbit_reset       = null;
+    private TransformGroup rocket_bot_tg = null; // will use it to apply transformations on bottom part of the rocket
+    private TransformGroup rocket_top_tg = null; // will use it to apply transformations on top part of the rocket
+    private GraphicsConfiguration config = null;
+    private Canvas3D canvas = null;
+    private SimpleUniverse universe = null;
+    private BranchGroup root = null;
+    private TransformGroup camera = null;
+    private OrbitBehavior orbit = null;
+    private Transform3D orbit_reset = null;
 
     public static void main(String[] args) {
         RocketLaunch rl = new RocketLaunch();
         rl.setUp();
+
     }
 
-    public RocketLaunch(){
+    public RocketLaunch() {
         this.setName("Rocket Launch vAlpha");
         // kill the window on close
         this.addWindowListener(new WindowAdapter() {
@@ -87,13 +91,13 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         this.camera = this.universe.getViewingPlatform().getViewPlatformTransform();
         // setting mouse rotation behaviour
         this.orbit = new OrbitBehavior(this.canvas, OrbitBehavior.REVERSE_ROTATE + OrbitBehavior.DISABLE_TRANSLATE
-            + OrbitBehavior.STOP_ZOOM);
+                + OrbitBehavior.STOP_ZOOM);
         this.orbit_reset = new Transform3D();
         this.universe.getViewingPlatform().getViewPlatformTransform().getTransform(this.orbit_reset);
         this.orbit.setHomeTransform(this.orbit_reset);
         this.orbit.setMinRadius(1.0);
         this.orbit.setRotationCenter(new Point3d(0.0f, -0.1f, -4.5f));
-        this.orbit.setSchedulingBounds(new BoundingSphere(new Point3d(0.0,0.0,0.0), 2000.0));
+        this.orbit.setSchedulingBounds(new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 2000.0));
         this.universe.getViewingPlatform().setViewPlatformBehavior(this.orbit);
 
         this.root = new BranchGroup();
@@ -104,7 +108,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         addLights(this.root);
         // adding a behavior to fix flickering when using conventional timers
         RocketBehavior screenUpdater = new RocketBehavior(this);
-        screenUpdater.setSchedulingBounds(new BoundingSphere(new Point3d( 0.0, 0.0, 0.0 ), 100000.0));
+        screenUpdater.setSchedulingBounds(new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100000.0));
         this.root.addChild(screenUpdater);
         // make optimizations on the scene objects
         this.root.compile();
@@ -113,14 +117,29 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
 
         // swing stuff
         panel.add(this.canvas);
+
         this.getContentPane().add(panel, BorderLayout.CENTER);
         this.pack();
         this.setVisible(true);
+
+        //fuel input box
+        JTextField fuel1 = new JTextField(5);
+        JTextField fuel2 = new JTextField(5);
+        JPanel fuel_inputs = new JPanel();
+        fuel_inputs.add(new JLabel("Litros de combustível da base:"));
+        fuel_inputs.add(fuel1);
+fuel_inputs.setPreferredSize(new Dimension(200, 100));         
+//fuel_inputs.add(Box.createHorizontalStrut(30)); // a spacer
+        fuel_inputs.add(new JLabel("Litros de combustível do topo:"));
+        fuel_inputs.add(fuel2);
+        JOptionPane.showConfirmDialog(null, fuel_inputs,"Insira a quantidade de combustivel", JOptionPane.OK_CANCEL_OPTION);
+        fuel_base =  Integer.parseInt(fuel1.getText());
+        fuel_top =   Integer.parseInt(fuel2.getText());
     }
 
-    public void addBackground(BranchGroup group){
+    public void addBackground(BranchGroup group) {
         Background bg = new Background();
-        BoundingSphere sphere = new BoundingSphere(new Point3d(0,0,0), 100000);
+        BoundingSphere sphere = new BoundingSphere(new Point3d(0, 0, 0), 100000);
         bg.setApplicationBounds(sphere);
         BranchGroup backGeoBranch = new BranchGroup();
         Sphere s = new Skydome().getSkydome();
@@ -183,30 +202,33 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         group.addChild(rocket_top_tg);
     }
 
-    private void moveCam(Transform3D trans){
+    private void moveCam(Transform3D trans) {
         Vector3d vector = new Vector3d();
         this.camera.getTransform(trans);
         trans.get(vector);
-        if (state == 1)
-            // cam moves along both parts of the rocket
-            vector.y = (2*ypos+top_yfactor)/2;
-        else
-            // cam follows top part
-            vector.y = (2*ypos-top_yfactor)/2;
+        if (state == 1) // cam moves along both parts of the rocket
+        {
+            vector.y = (2 * ypos + top_yfactor) / 2;
+        } else // cam follows top part
+        {
+            vector.y = (2 * ypos - top_yfactor) / 2;
+        }
         // moving camera to the back during init flight
-        if (vector.z < 6.0)
+        if (vector.z < 6.0) {
             vector.z += 0.006;
+        }
         trans.set(vector);
         this.camera.setTransform(trans);
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode()==KeyEvent.VK_SPACE) {
-            switch (state){
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            switch (state) {
                 case 0:
                     // launch start
                     s1.start();
@@ -221,18 +243,13 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 case 2:
                     // start free fall
                     state = 3;
-                    try{
-                        sound.stopflight();
-                        sound.turbines_off();
-                    }
-                    catch (InterruptedException ex){
-                        System.out.println("som interrompido");
-                }
+                    sound.stopflight();
+                    sound.turbines_off();
             }
         }
     }
 
-    private void initDetachedFall(){
+    private void initDetachedFall() {
         // initializing bottom part fall
         sound.uncouple();
         d_xpos = xpos;
@@ -245,104 +262,95 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {}
+    public void keyReleased(KeyEvent e) {
+    }
 
-    private void setNewCoordinates(Transform3D trans, boolean dealloc){
+    private void setNewCoordinates(Transform3D trans, boolean dealloc) {
         Vector3d vector = new Vector3d();
         trans.get(vector);
         if (!dealloc) {
             this.xpos = (float) vector.x;
             this.ypos = (float) vector.y;
             this.zpos = (float) vector.z;
-        }
-        else{
+        } else {
             this.d_xpos = (float) vector.x;
             this.d_ypos = (float) vector.y;
             this.d_zpos = (float) vector.z;
         }
     }
 
-    private Transform3D accelerate(float x, float y, float z, boolean topPart){
+    private Transform3D accelerate(float x, float y, float z, boolean topPart) {
         // determine acceleration
         Transform3D trans = new Transform3D();
         if (y < 1.0) {
             y += 0.01;
             cur_speed = (float) 0.01;
-        }
-        else if (y < 3.0) {
+        } else if (y < 3.0) {
             y += 0.02;
             cur_speed = (float) 0.02;
-        }
-        else if (y < 5.0) {
+        } else if (y < 5.0) {
             y += 0.03;
             cur_speed = (float) 0.03;
-        }
-        else if (y < 10.0) {
+        } else if (y < 10.0) {
             y += 0.05;
             cur_speed = (float) 0.05;
-        }
-        else {
+        } else {
             // default speed
             y += def_movespeed;
             cur_speed = def_movespeed;
         }
-        if (topPart)
+        if (topPart) {
             trans.setScale(1.4);
+        }
         trans.setTranslation(new Vector3f(x, y, z));
         return trans;
     }
 
-    private Transform3D decelerate(float x, float y, float z, float speed, float angle, boolean topPart){
+    private Transform3D decelerate(float x, float y, float z, float speed, float angle, boolean topPart) {
         // for slowing down and free falling objects
         Transform3D trans = new Transform3D();
         Transform3D secondAxis = new Transform3D();
-        if (speed > 0.999){
+        if (speed > 0.999) {
             // don't rotate immediately
             speed -= 0.0004;
-        }
-        else
-        if (speed > 0.2){
+        } else if (speed > 0.2) {
             // just started losing speed
             speed -= 0.0004;
             angle += Math.PI / 250;
             trans.rotY(angle);
             secondAxis.rotZ(angle);
-        }
-        else if (speed > -1.0){
+        } else if (speed > -1.0) {
             speed -= 0.0005;
             angle += Math.PI / 240;
             trans.rotY(angle);
             secondAxis.rotZ(angle);
-        }
-        else if (speed > -2.0){
+        } else if (speed > -2.0) {
             // losing speed steadily
             speed -= 0.001;
             angle += Math.PI / 230;
             trans.rotY(angle);
             secondAxis.rotZ(angle);
-        }
-        else if (speed > -6.0){
+        } else if (speed > -6.0) {
             // losing speed steadily
             speed -= 0.01;
             angle += Math.PI / 220;
             trans.rotY(angle);
             secondAxis.rotZ(angle);
-        }
-        else{
+        } else {
             // stabilize fall
             speed -= 1.0;
-            angle += Math.PI/200;
+            angle += Math.PI / 200;
             trans.rotX(angle);
             secondAxis.rotZ(angle);
         }
-        if (secondAxis != null)
+        if (secondAxis != null) {
             trans.mul(secondAxis);
+        }
         if (topPart) {
             trans.setScale(1.4);
             this.cur_speed = speed;
             this.angle = angle;
-        }
-        else {
+        } else {
             this.bot_falling_speed = speed;
             this.d_angle = angle;
         }
@@ -352,13 +360,14 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         return trans;
     }
 
-    public void update(){
+    public void update() {
         // action monitoring
-        switch (state){
+        switch (state) {
             case 1:
                 /* TAKING FLIGHT */
-                if (this.ypos > 23.0)
+                if (this.ypos > 23.0) {
                     shakeRocket();
+                }
                 Transform3D movementTrans = accelerate(xpos, ypos, zpos, false);
                 setNewCoordinates(movementTrans, false);
                 // my models have different, incompatible scales so I have to do this little workaround
@@ -394,12 +403,13 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         }
     }
 
-    private void shakeRocket(){
+    private void shakeRocket() {
         // making some shaky cam effects
-        if (this.shakeleft>0)
+        if (this.shakeleft > 0) {
             this.xpos += 0.002;
-        else
+        } else {
             this.xpos -= 0.002;
+        }
         this.shakecount += 1;
         if (shakecount > 8) {
             this.shakeleft *= -1;
@@ -408,8 +418,10 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     }
 
     @Override
-    public void mouseDragged(MouseEvent mouseEvent) {}
+    public void mouseDragged(MouseEvent mouseEvent) {
+    }
 
     @Override
-    public void mouseMoved(MouseEvent mouseEvent) {}
+    public void mouseMoved(MouseEvent mouseEvent) {
+    }
 }

@@ -39,13 +39,18 @@ public class Sounds implements Runnable {
         }
     }
 
-    public void stopflight() throws InterruptedException {
+    public void stopflight()  {
         fly = false;
         int i;
         FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);;
         for (i = 1; i < 10; i++) {
             gainControl.setValue(-10.0f);
+            try{
             Thread.sleep(200);
+            }
+            catch(InterruptedException e){
+            
+            }
         }
     }
 
