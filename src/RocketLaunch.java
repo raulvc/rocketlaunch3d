@@ -449,11 +449,10 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     public void decrement_fuel(){
         switch (state){
             case 1:
-                fuel_base -= 0.01;
-                System.out.println(fuel_base);
+                fuel_base -= 0.02;
                 break;
             case 2:
-                fuel_top -= 0.01;
+                fuel_top -= 0.02;
         }
     }
 }
