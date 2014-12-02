@@ -175,10 +175,9 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         rocket_bot_tg.setTransform(trans_bot);
         rocket_top_tg.setTransform(trans_top);
         moveCam(trans_bot);
-        show_config();
-
         hud_text.setString(" ");
         hud_text_height.setString(" ");
+        show_config();
     }
 
     public void rotate_to_zero(TransformGroup tg){
