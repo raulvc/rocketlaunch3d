@@ -1,7 +1,6 @@
 
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Sphere;
-import com.sun.j3d.utils.geometry.Text2D;
 import com.sun.j3d.utils.universe.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -16,6 +15,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     private float fuel_base, fuel_top;
     private TransformGroup hud_tg = null;
     private Text3D hud_text = null;
+    private Text3D hud_text_height = null;
     // positioning of the top part of the rocket
     private float xpos = 0.0f;
     private float ypos = -0.1f;
@@ -157,6 +157,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     }
 
     public void reset_simulation(){
+        // stoping stuff and resetting values
         s1.interrupt();
         s1 = null;
         s1 = new Thread(sound);
@@ -175,6 +176,9 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         rocket_top_tg.setTransform(trans_top);
         moveCam(trans_bot);
         show_config();
+
+        hud_text.setString(" ");
+        hud_text_height.setString(" ");
     }
 
     public void rotate_to_zero(TransformGroup tg){
@@ -191,18 +195,25 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         hud_text = new Text3D(f3d, new String("RLv1"), new Point3f(-6.0f,-0.5f, -3.5f));
         hud_text.setCapability(Text3D.ALLOW_STRING_READ);
         hud_text.setCapability(Text3D.ALLOW_STRING_WRITE);
+        hud_text_height =new Text3D (f3d, new String(" "), new Point3f(-6.0f,-2.0f, -3.5f));
+        hud_text_height.setCapability(Text3D.ALLOW_STRING_READ);
+        hud_text_height.setCapability(Text3D.ALLOW_STRING_WRITE);
         // text appearance
-        Shape3D sh = new Shape3D();
+        Shape3D fuel_sh = new Shape3D();
+        Shape3D height_sh = new Shape3D();
         Color3f white = new Color3f(1.0f, 1.0f, 1.0f);
         Color3f blue = new Color3f(.2f, 0.2f, 0.6f);
         Appearance a = new Appearance();
         Material m = new Material(blue, blue, blue, white, 80.0f);
         m.setLightingEnable(true);
         a.setMaterial(m);
-        sh.setAppearance(a);
-        sh.setGeometry(hud_text);
+        fuel_sh.setAppearance(a);
+        fuel_sh.setGeometry(hud_text);
+        height_sh.setAppearance(a);
+        height_sh.setGeometry(hud_text_height);
         hud_tg = new TransformGroup();
-        hud_tg.addChild(sh);
+        hud_tg.addChild(fuel_sh);
+        hud_tg.addChild(height_sh);
         hud_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         group.addChild(hud_tg);
     }
@@ -532,16 +543,17 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
 
     public void update_hud() {
         // updates the overlay text
-        String text = "";
+        String fuel_text = "";
         switch (state){
             case 1:
-                text = "BASE: " + String.format("%5.2f",fuel_base) + "L";
+                fuel_text = "BASE: " + String.format("%5.2f",fuel_base) + "L";
                 break;
             case 2:
-                text = "TOPO: " + String.format("%5.2f",fuel_top) + "L";
+                fuel_text = "TOPO: " + String.format("%5.2f",fuel_top) + "L";
         }
 
-        hud_text.setString(text);
+        hud_text.setString(fuel_text);
+        hud_text_height.setString("Alt.:   " + String.format("%5.2f", ypos) + "m");
 
         Transform3D move_text = new Transform3D();
         move_text.setScale(0.2);
