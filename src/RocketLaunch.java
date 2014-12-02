@@ -127,6 +127,10 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         this.setLocationRelativeTo(null);
         this.setVisible(true);
 
+        show_config();
+    }
+
+    public void show_config(){
         //fuel input box panel
         JTextField fuel1 = new JTextField(5);
         JTextField fuel2 = new JTextField(5);
@@ -150,6 +154,35 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 JOptionPane.showConfirmDialog(null, fuel_inputs, "Insira a quantidade de combustivel", JOptionPane.OK_CANCEL_OPTION);
             }
         }
+    }
+
+    public void reset_simulation(){
+        s1.interrupt();
+        s1 = null;
+        s1 = new Thread(sound);
+        state = 0;
+        xpos = 0.0f;
+        ypos = -0.1f;
+        zpos = -4.5f;
+        Transform3D trans_bot = new Transform3D();
+        trans_bot.setTranslation(new Vector3f(xpos, ypos, zpos));
+
+        Transform3D trans_top = new Transform3D();
+        trans_top.setScale(1.4);
+        trans_top.setTranslation(new Vector3f(xpos+top_xfactor, ypos+top_yfactor, zpos+top_zfactor));
+
+        rocket_bot_tg.setTransform(trans_bot);
+        rocket_top_tg.setTransform(trans_top);
+        moveCam(trans_bot);
+        show_config();
+    }
+
+    public void rotate_to_zero(TransformGroup tg){
+        Transform3D t3d = new Transform3D();
+        t3d.rotX(0);
+        t3d.rotY(0);
+        t3d.rotZ(0);
+        tg.setTransform(t3d);
     }
 
     public void addHUD(BranchGroup group){
@@ -244,10 +277,17 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         Vector3d vector = new Vector3d();
         this.camera.getTransform(trans);
         trans.get(vector);
-        if (state == 1) // cam moves along both parts of the rocket
-            vector.y = (2 * ypos + top_yfactor) / 2;
-        else // cam follows top part
-            vector.y = (2 * ypos - top_yfactor) / 2;
+        switch (state){
+            case 0: // resetting camera
+            case 1: // cam moves along both parts of the rocket
+                vector.y = (2 * ypos + top_yfactor) / 2;
+                break;
+            case 2: // cam follows top part
+            case 3:
+                vector.y = (2 * ypos - top_yfactor) / 2;
+                break;
+        }
+
         // moving camera to the back during init flight
         if (vector.z < 6.0) {
             vector.z += 0.012;
@@ -281,6 +321,9 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                     state = 3;
                     sound.stopflight();
                     sound.turbines_off();
+                    break;
+                case 3:
+                    reset_simulation();
             }
         }
     }
