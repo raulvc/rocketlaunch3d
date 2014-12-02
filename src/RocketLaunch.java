@@ -439,7 +439,6 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 }
                 break;
             case 3:
-                System.out.println(speed);
                 if (speed > 0.6) {
                     // don't rotate immediately
                     speed -= 0.004;
@@ -545,7 +544,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 setNewCoordinates(fallTopTrans, false);
                 this.rocket_top_tg.setTransform(fallTopTrans);
                 moveCam(fallTopTrans);
-                if (ypos <= 4.0f){
+                if (ypos <= 3.5f){
                     state = 4;
                 }
         }
