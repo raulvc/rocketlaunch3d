@@ -155,7 +155,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     public void addHUD(BranchGroup group){
         // hud
         Font3D f3d = new Font3D(new Font("TestFont", Font.PLAIN, 2), new FontExtrusion());
-        hud_text = new Text3D(f3d, new String("RLv1"), new Point3f(-7.0f,-0.5f, -3.5f));
+        hud_text = new Text3D(f3d, new String("RLv1"), new Point3f(-6.0f,-0.5f, -3.5f));
         hud_text.setCapability(Text3D.ALLOW_STRING_READ);
         hud_text.setCapability(Text3D.ALLOW_STRING_WRITE);
         // text appearance
@@ -492,10 +492,10 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         String text = "";
         switch (state){
             case 1:
-                text = "BASE: " + String.format("%5.2f",fuel_base);
+                text = "BASE: " + String.format("%5.2f",fuel_base) + "L";
                 break;
             case 2:
-                text = "TOPO: " + String.format("%5.2f",fuel_top);
+                text = "TOPO: " + String.format("%5.2f",fuel_top) + "L";
         }
 
         hud_text.setString(text);
