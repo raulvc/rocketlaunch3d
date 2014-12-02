@@ -14,8 +14,13 @@ import sun.audio.*;
  */
 public class Sounds implements Runnable {
 
-    private Clip clip, clip2;
-    private volatile boolean fly = true;
+    private Clip clip, clip2, clip3;
+    private volatile boolean fly;
+
+    public void shutdown(){
+        clip2.stop();
+        clip3.stop();
+    }
 
     public void uncouple() {
         try {
@@ -31,9 +36,9 @@ public class Sounds implements Runnable {
     public void turbines_off() {
         try {
             AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File("src//sounds//turbines_off_sound.wav"));
-            clip2 = AudioSystem.getClip();
-            clip2.open(inputStream);
-            clip2.start();
+            clip3 = AudioSystem.getClip();
+            clip3.open(inputStream);
+            clip3.start();
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -50,6 +55,7 @@ public class Sounds implements Runnable {
 
     public void run() {
         try {
+            fly = true;
             AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File("src//sounds//rocket_sound.wav"));
             clip = AudioSystem.getClip();
             clip.open(inputStream);

@@ -48,6 +48,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
      1 -> initial flight
      2 -> detachment
      3 -> out of gas / free falling
+     4 -> stopped simulation
      */
     private int state = 0;
 
@@ -158,6 +159,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
 
     public void reset_simulation(){
         // stoping stuff and resetting values
+        sound.shutdown();
         s1.interrupt();
         s1 = null;
         s1 = new Thread(sound);
@@ -332,7 +334,8 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                     sound.stopflight();
                     sound.turbines_off();
                     break;
-                case 3:
+                case 3: // out of fuel
+                case 4: // stopped simulation
                     reset_simulation();
             }
         }
@@ -399,39 +402,68 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         // for slowing down and free falling objects
         Transform3D trans = new Transform3D();
         Transform3D secondAxis = new Transform3D();
-        if (speed > 0.999) {
-            // don't rotate immediately
-            speed -= 0.0004;
-        } else if (speed > 0.2) {
-            // just started losing speed
-            speed -= 0.0004;
-            angle += Math.PI / 250;
-            trans.rotY(angle);
-            secondAxis.rotZ(angle);
-        } else if (speed > -1.0) {
-            speed -= 0.0005;
-            angle += Math.PI / 240;
-            trans.rotY(angle);
-            secondAxis.rotZ(angle);
-        } else if (speed > -2.0) {
-            // losing speed steadily
-            speed -= 0.001;
-            angle += Math.PI / 230;
-            trans.rotY(angle);
-            secondAxis.rotZ(angle);
-        } else if (speed > -6.0) {
-            // losing speed steadily
-            speed -= 0.01;
-            angle += Math.PI / 220;
-            trans.rotY(angle);
-            secondAxis.rotZ(angle);
-        } else {
-            // stabilize fall
-            speed -= 1.0;
-            angle += Math.PI / 200;
-            trans.rotX(angle);
-            secondAxis.rotZ(angle);
+        switch (state){
+            case 2:
+                if (speed > 0.999) {
+                    // don't rotate immediately
+                    speed -= 0.0004;
+                } else if (speed > 0.2) {
+                    // just started losing speed
+                    speed -= 0.0004;
+                    angle += Math.PI / 250;
+                    trans.rotY(angle);
+                    secondAxis.rotZ(angle);
+                } else if (speed > -1.0) {
+                    speed -= 0.0005;
+                    angle += Math.PI / 240;
+                    trans.rotY(angle);
+                    secondAxis.rotZ(angle);
+                } else if (speed > -2.0) {
+                    // losing speed steadily
+                    speed -= 0.001;
+                    angle += Math.PI / 230;
+                    trans.rotY(angle);
+                    secondAxis.rotZ(angle);
+                } else if (speed > -6.0) {
+                    // losing speed steadily
+                    speed -= 0.01;
+                    angle += Math.PI / 220;
+                    trans.rotY(angle);
+                    secondAxis.rotZ(angle);
+                } else {
+                    // stabilize fall
+                    speed -= 1.0;
+                    angle += Math.PI / 200;
+                    trans.rotY(angle);
+                    secondAxis.rotZ(angle);
+                }
+                break;
+            case 3:
+                System.out.println(speed);
+                if (speed > 0.6) {
+                    // don't rotate immediately
+                    speed -= 0.004;
+                } else if (speed > 0.2) {
+                    // just started losing speed
+                    speed -= 0.006;
+                    angle += Math.PI / 250;
+                    trans.rotY(angle);
+                    secondAxis.rotZ(angle);
+                } else if (speed > -1.0) {
+                    speed -= 0.008;
+                    angle += Math.PI / 240;
+                    trans.rotY(angle);
+                    secondAxis.rotZ(angle);
+                } else {
+                    // stabilize fall
+                    speed -= 0.009;
+                    angle += Math.PI / 240;
+                    trans.rotY(angle);
+                    secondAxis.rotZ(angle);
+                }
+                break;
         }
+
         if (secondAxis != null) {
             trans.mul(secondAxis);
         }
@@ -500,10 +532,22 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 break;
             case 3:
                 /* FREE FALL */
+
+                // bot part
+                if (d_ypos >= -4.0f) {
+                    Transform3D botStillFalling = decelerate(d_xpos, d_ypos, d_zpos, bot_falling_speed, d_angle, false);
+                    setNewCoordinates(botStillFalling, true);
+                    this.rocket_bot_tg.setTransform(botStillFalling);
+                }
+
+
                 Transform3D fallTopTrans = decelerate(xpos, ypos, zpos, cur_speed, angle, true);
                 setNewCoordinates(fallTopTrans, false);
                 this.rocket_top_tg.setTransform(fallTopTrans);
                 moveCam(fallTopTrans);
+                if (ypos <= 4.0f){
+                    state = 4;
+                }
         }
     }
 
@@ -540,6 +584,7 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         }
     }
 
+    private float ymax;
     public void update_hud() {
         // updates the overlay text
         String fuel_text = "";
