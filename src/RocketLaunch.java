@@ -1,6 +1,7 @@
 
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Sphere;
+import com.sun.j3d.utils.geometry.Text2D;
 import com.sun.j3d.utils.universe.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -13,6 +14,8 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
 
     // fuel related
     private float fuel_base, fuel_top;
+    private TransformGroup hud_tg = null;
+    private Text3D hud_text = null;
     // positioning of the top part of the rocket
     private float xpos = 0.0f;
     private float ypos = -0.1f;
@@ -87,8 +90,9 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         this.canvas.addKeyListener(this);
         this.canvas.addMouseMotionListener(this);
         this.universe = new SimpleUniverse(this.canvas);
-
+        // camera
         this.camera = this.universe.getViewingPlatform().getViewPlatformTransform();
+
         // setting mouse rotation behaviour
         this.orbit = new OrbitBehavior(this.canvas, OrbitBehavior.REVERSE_ROTATE + OrbitBehavior.DISABLE_TRANSLATE
                 + OrbitBehavior.STOP_ZOOM);
@@ -101,11 +105,11 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
         this.universe.getViewingPlatform().setViewPlatformBehavior(this.orbit);
 
         this.root = new BranchGroup();
-
         // adding stuff to the scene
         addBackground(this.root);
         addObjects(this.root);
         addLights(this.root);
+        addHUD(this.root);
         // adding a behavior to fix flickering when using conventional timers
         RocketBehavior screenUpdater = new RocketBehavior(this);
         screenUpdater.setSchedulingBounds(new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100000.0));
@@ -147,6 +151,29 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
             }
         }
     }
+
+    public void addHUD(BranchGroup group){
+        // hud
+        Font3D f3d = new Font3D(new Font("TestFont", Font.PLAIN, 2), new FontExtrusion());
+        hud_text = new Text3D(f3d, new String("RLv1"), new Point3f(-7.0f,-0.5f, -3.5f));
+        hud_text.setCapability(Text3D.ALLOW_STRING_READ);
+        hud_text.setCapability(Text3D.ALLOW_STRING_WRITE);
+        // text appearance
+        Shape3D sh = new Shape3D();
+        Color3f white = new Color3f(1.0f, 1.0f, 1.0f);
+        Color3f blue = new Color3f(.2f, 0.2f, 0.6f);
+        Appearance a = new Appearance();
+        Material m = new Material(blue, blue, blue, white, 80.0f);
+        m.setLightingEnable(true);
+        a.setMaterial(m);
+        sh.setAppearance(a);
+        sh.setGeometry(hud_text);
+        hud_tg = new TransformGroup();
+        hud_tg.addChild(sh);
+        hud_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        group.addChild(hud_tg);
+    }
+
 
     public void addBackground(BranchGroup group) {
         Background bg = new Background();
@@ -223,10 +250,11 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
             vector.y = (2 * ypos - top_yfactor) / 2;
         // moving camera to the back during init flight
         if (vector.z < 6.0) {
-            vector.z += 0.006;
+            vector.z += 0.012;
         }
         trans.set(vector);
         this.camera.setTransform(trans);
+        update_hud();
     }
 
     @Override
@@ -387,6 +415,8 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 this.rocket_bot_tg.setTransform(movementTrans);
                 this.rocket_top_tg.setTransform(topCorrection);
                 moveCam(movementTrans);
+                // spending gas
+                this.decrement_fuel(1);
                 if (fuel_base <= 0) {
                     // deallocate rocket base
                     initDetachedFall();
@@ -406,6 +436,8 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 setNewCoordinates(topMovementTrans, false);
                 this.rocket_top_tg.setTransform(topMovementTrans);
                 moveCam(topMovementTrans);
+                // spending gas
+                this.decrement_fuel(2);
                 if (fuel_top <= 0) {
                     // start free fall
                     state = 3;
@@ -420,8 +452,6 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
                 this.rocket_top_tg.setTransform(fallTopTrans);
                 moveCam(fallTopTrans);
         }
-        // spending gas
-        this.decrement_fuel();
     }
 
     private void shakeRocket() {
@@ -446,7 +476,8 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
     public void mouseMoved(MouseEvent mouseEvent) {
     }
 
-    public void decrement_fuel(){
+    public void decrement_fuel(int state){
+        // consumes fuel
         switch (state){
             case 1:
                 fuel_base -= 0.02;
@@ -454,5 +485,24 @@ public class RocketLaunch extends JFrame implements KeyListener, MouseMotionList
             case 2:
                 fuel_top -= 0.02;
         }
+    }
+
+    public void update_hud() {
+        // updates the overlay text
+        String text = "";
+        switch (state){
+            case 1:
+                text = "BASE: " + String.format("%5.2f",fuel_base);
+                break;
+            case 2:
+                text = "TOPO: " + String.format("%5.2f",fuel_top);
+        }
+
+        hud_text.setString(text);
+
+        Transform3D move_text = new Transform3D();
+        move_text.setScale(0.2);
+        move_text.setTranslation(new Vector3f(xpos-3.1f, ypos-0.5f, zpos-3.5f));
+        hud_tg.setTransform(move_text);
     }
 }
